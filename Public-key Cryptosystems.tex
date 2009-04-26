@@ -1,0 +1,185 @@
+\documentclass[english,titlepage,11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[latin9]{inputenc}
+\usepackage{geometry}
+\geometry{verbose,a4paper,tmargin=2.5cm,bmargin=2.5cm,lmargin=2.5cm,rmargin=2.5cm}
+\pagestyle{headings}
+\usepackage{babel}
+\usepackage{listings}
+\usepackage{wrapfig}
+
+\begin{document}
+
+\title{Describe Public-key Cryptosystems - TTM4135}
+\author{Kim Joar Bekkelund}
+\date{26.04.2009}
+
+\maketitle
+
+\section{Introduction}
+
+Ever since the dawn of hiding information, cryptography has been based on having a shared secret. This shared secret is used to both encrypt and decrypt information. This is called symmetric cryptography. The algorithms have become increasingly more complex and more secure, but until 1976 there was still a major problem: The security of the symmetric key algorithms depends on the secrecy of the shared secret --- the key.
+
+The breakthrough came when Whitfield Diffie and Martin Hellman released their seminal paper New Directions in Cryptography, which introduced Public-key cryptography. This layed the ground work for solving two of the fundamental problems in cryptography, key distribution and digital signatures.
+
+The term cryptosystem refers to the set of algorithms needed for key generation, encryption and decryption. In contrast to symmetric cryptosystems, public-key cryptosystems have distinct keys for encryption and decryption, a private key and a public key. It is computationally easy to compute a private key, and comptutationally easy to compute the public key from the private key, but it is computationally infeasible to derive the private key from the public key. Because of this the public key can be made available to everyone, while the private key is kept secret.
+
+This essay is a brief explanation on some essentials of public-key cryptosystems.
+
+\section{Definitions}
+
+To introduce the term cryptosystem, two definitions are inspected. Through this essay the term cryptosystem and encryption scheme have the same meaning.
+
+Diffie and Hellman defines\cite{diffie76} a public-key cryptosystem as a pair of families $\left \{ E_K \right \}_{K\in \left \{ K \right \}}$ and $\left \{ D_K \right \}_{K\in \left \{ K \right \}}$ of algorithms representing invertible transformations,
+
+\begin{equation}
+  E_K: \left \{  M \right \} \rightarrow \left \{  M \right \} \\
+  D_K: \left \{  M \right \} \rightarrow \left \{  M \right \}
+\end{equation}
+
+on a finite message space $\left \{  M \right \}$, such that
+
+\begin{enumerate}
+  \item for every $K \in \left \{ K \right \}$, $E_K$ is the inverse of $D_K$
+  \item for every $K \in \left \{ K \right \}$ and $M \in \left \{ M \right \}$, the algorithms $E_K$ and $D_K$ are easy to compute
+  \item for almost every $K \in \left \{ K \right \}$, each easily computed algorithm equivalent to $D_K$ is computationally infeasible to derive from $E_K$
+  \item for every $K \in \left \{ K \right \}$, it is feasible to compute inverse pairs $E_K$ and $D_K$ from $K$
+\end{enumerate}
+
+Y. Watanabe, J. Shikata, and H. Imai defines\cite{watanabe02} a public-key encryption scheme as a is a triplet of algorithms, $PE=(K,E,D)$, such that
+
+\begin{itemize}
+  \item the key generation algorithm $K$ is a probabilistic polynomial-time algorithm which takes a security parameter $k \in N$ and outputs a pair $(PU_K, PR_K)$ of matching public and private keys.
+  \item the encryption algorithm $E$ is a probabilistic polynomial-time algorithm which takes a public key $PU$ and a message $X$ and outputs a ciphertext $Y$ 
+ \item the decryption algorithm $D$ is a deterministic polynomial-time algorithm which takes a private key $PR$ and a ciphertext $Y$ and outputs the message $X$
+\end{itemize}
+
+From these definitions we can see that a public-key cryptosystem consist of six parts: Plaintext, encryption algorithm, public and private keys, ciphertext, and decryption algorithm.
+
+\section{One way functions}
+
+While symmetric algorithms are based on substitution and permutation, public-key algorithms are based on mathematical functions\cite{stallings06}. At the heart of the public-key cryptosystem is the idea of using a one-way function for encryption\cite{koblitz04}.
+
+A function $E$ that satisfies (1)-(3) in Diffie and Hellman's definition, is a trap-door one-way function, because they are easy to compute in one direction, but difficult to compute in the opposite direction without special information. In public-key cryptosystems this special information is the private key. If the function $E$ also satifies (4), it is a trap-door one-way permutation, because every message is the ciphertext for some other message and every ciphertext is itself a permissible message\cite{rsa78}.
+
+In another way we can say that a one-to-one function $f : X \rightarrow Y$ is \emph{one-way} if it is easy to compute $f(x)$ for any $x \in X$ bit hard to compute $f^{-1}(y)$ for most randomly selected $y$ in the range of $f$ \cite{koblitz04,menezes01}.
+
+Because of the trap-door one-way function everyone can send a message to a given person using their public key. There is no need for the sender to have made any secret arrangement with the recipient. The sender and receiver need never have had any prior contact at all, because only the holder of the corresponding private key can decrypt the message\cite{diffie88,koblitz04}.
+
+The existence of one-way functions is still an open conjecture, and in fact, their existence would prove that the computability classes P and NP are distinct\cite{goldreich01}. There exists several possible candidates for one-way functions:
+
+\begin{itemize}
+	\item Multiplication and factoring, in which the RSA cryptosystem is based\cite{rsa78,rivest03}.
+	\item Modular squaring and square roots, in which the Rabin cryptosystem is based\cite{rabin79}.
+	\item Discrete exponential and logarithm, in which the ElGamal encryption scheme is based\cite{elgamal85}.
+\end{itemize}
+
+\section{Security}
+
+Because the encrypted text can de determined uniquely from the public information, public-key cryptosystems cannot be unconditionally secure\cite{diffie76}. The only unconditionally secure cryptographic algorithm is the symmetric cipher \emph{one time pad}\cite{kahn67}. 
+
+From the view of resisting cryptanalysis there is nothing in principle about either symmetric or public-key encryption that makes one superior to another\cite{stallings06}. A public-key cryptosystem is vulnerable to a brute-force attack, and has the same coutermeasure as symmetric cryptosystems: using larger keys.
+
+An active attack is possible in an improperly designed protocol. The attacker may impersonate another user and may alter or replay the messages \cite{dolev83,menezes01}. This creates a necessity for authentication in public-key systems, otherwise it is not possible for the two sides to be certain that they uses the other's key, and not some adversary.
+
+\section{Applications}
+
+Depending of the application, the sender can either use his private key, the receiver's public key, or both, to perform the cryptographic algorithms. Stallings classifies the use of public-key cryptosystems into three categories\cite{stallings06}:
+
+\begin{itemize}
+  \item Encryption/Decryption. The sender encrypts a message with the recipient's public key.
+  \item Digital signature. A public-key cryptosystem that satifies (4) can implement digital signatures\cite{diffie76,rsa78}. This implies that a sender can sign a message by encrypting it with his private key, and anyone with access to his public key can verify that it must have been encrypted with the corresponding private key.
+  \item Key exchange. Two sides cooperate to exchange a session key. 
+\end{itemize}
+
+Because of the formidable requirements for public-key cryptosystems in \emph{New Directions in Cryptography}\cite{diffie76} only a few algorithms have gained widespread acceptance\cite{stallings06}: RSA, elliptic curve cryptography, Diffie-Hellman, and DSS.
+
+\section{Conclusion}
+
+The definition of public-key cryptosystem has given a basic view of what public-key cryptography actually is. The heart of a public-key cryptosystem is its one-way trap-door function. The main difference between symmetric and public-key cryptosystems is the use of two distinct keys in the latter, and because of this the sender and receiver need never have had any prior contact at all, and can still send cryptographically secure information to each other.
+
+There are three categories of public-key cryptosystems, and an algorithm, such as RSA or Elliptic Curve, need not implement all of these.
+
+\begin{thebibliography}{9}
+
+\bibitem{stallings06}
+  William Stallings,
+  \emph{Cryptography and Network Security}.
+  Pearson Prentice Hall,
+  4th Edition,
+  2006.
+  
+\bibitem{diffie76}
+  W. Diffie and M. Hellman,
+  \emph{New Directions in Cryptography}.
+  IEEE Transactions on Information Theory, vol. IT-22, pp. 644-654
+  1976.
+
+\bibitem{rsa78}
+  R. L. Rivest, A. Shamir, and L. Adleman,
+  \emph{A Method for Obtaining Digital Signatures and Public-Key Cryptosystems}.
+  1978.
+
+\bibitem{koblitz04}
+  N. Koblitz and A. J. Menezes,
+  \emph{A Survey of Public-Key Cryptosystems}.
+  2004.
+
+\bibitem{diffie88}
+  Whitfield Diffie,
+  \emph{The First Ten Years of Public-Key Cryptography}.
+  Proceedings of the IEEE, vol. 76, No. 5,
+  1988
+
+\bibitem{levin03}
+  Leonid A. Levin,
+  \emph{The Tale of One-Way Functions}.
+  2003.
+
+\bibitem{goldreich01}
+  Oded Goldreich
+  \emph{Foundations of Cryptography: Volume 1, Basic Tools}.
+  2001.
+
+\bibitem{watanabe02}
+  Y. Watanabe, J. Shikata, and H. Imai,
+  \emph{Lecture Notes in Computer Science}.
+  2002.
+
+\bibitem{menezes01}
+  A. J. Menezes, P. C. can Oorschot, and S. A. Vanstone,
+  \emph{Handbook of Applied Cryptography}.
+  Fifth Edition.
+  2001.
+
+\bibitem{kahn67}
+  D. Kahn, 
+  \emph{The Codebreakers, The Story of Secret Writing}.
+  1967.
+
+\bibitem{rabin79}
+  Michael Rabin,
+  \emph{Digitalized Signatures and Public-Key Functions as Intractable as Factorization}. 
+  MIT Laboratory for Computer Science,
+	1979.
+
+\bibitem{elgamal85}
+  T. ElGamal,
+  \emph{A public key cryptosystem and a signature scheme based on discrete logarithms}.
+	IEEE transactions on information theory, 
+	1985.
+
+\bibitem{rivest03}
+  Ronald L. Rivest,
+	\emph{RSA Problem}.
+	MIT Laboratory for Computer Science,
+	2003.
+
+\bibitem{dolev83}
+	D. Dolev and A. Yao
+	\emph{On the security of public key protocols}.
+	IEEE Transactions on information theory, 
+	1983.
+
+\end{thebibliography}
+\end{document}
